@@ -25,6 +25,7 @@
 #Set some informations
 APPNAME=shMined
 VERSION=1.0
+COPYRIGHT="Copyright (C) 2011  Fabien LOISON"
 
 
 #Go to the scrip directory
@@ -36,8 +37,28 @@ cd "${0%/*}" 1> /dev/null 2> /dev/null
 . kbmouse.sh
 
 
+copyright_screen() {
+	## Display the copyright screen.
+
+	tui_draw_rect 16 1 1 $(tui_window_get_width) $(tui_window_get_height)
+	for color in {232..255} {254..232}; do
+		tui_color_set_background 16
+		tui_color_set_foreground $color
+		tui_print_hcenter 5 "     _            _                _ "
+		tui_print_hcenter 6 " ___| |__   /\/\ (_)_ __   ___  __| |"
+		tui_print_hcenter 7 "/ __| '_ \ /    \| | '_ \ / _ \/ _\` |"
+		tui_print_hcenter 8 "\__ \ | | / /\/\ \ | | | |  __/ (_| |"
+		tui_print_hcenter 9 "|___/_| |_\/    \/_|_| |_|\___|\__,_|"
+		tui_print_hcenter 12 'The minesweeper game, in Bash!'
+		tui_print_hcenter $(($(tui_window_get_height)-1)) "${COPYRIGHT}"
+		[ $color == 255 ] && sleep 3 || sleep .05
+	done
+	tui_draw_rect 16 1 1 $(tui_window_get_width) $(tui_window_get_height)
+}
+
+
 #Main
 kbmouse_terminal_init
 tui_window_set_title "${APPNAME}"
-read #FIXME
+copyright_screen
 kbmouse_terminal_release
