@@ -27,6 +27,8 @@
 
 _ESC=$(echo -en "\e")
 
+_EVENT_CALLBACK=()
+
 
 kbmouse_terminal_init() {
 	## Initialize the terminal for mouse tracking
@@ -202,4 +204,45 @@ kbmouse_mouse_event_get_posx() {
 	##   The y mouse position
 
 	_kbmouse_mouse_event_decode "$1" | cut -d " " -f 4
+}
+
+
+kbmouse_mouse_event_add_callback() {
+	## Register a callback on mouse event for the specified zone.
+	##
+	## Args:
+	##   $1 -- x1
+	##   $2 -- y1
+	##   $3 -- x2
+	##   $4 -- y2
+	##   $5 -- Callback function
+	##
+	## The callback function must take the following arguments:
+	##   <Button_Event> <Modifier> <y> <x>
+
+	_EVENT_CALLBACK=(${_EVENT_CALLBACK[@]} "$1 $2 $3 $4 $5")
+}
+
+
+kbmouse_mouse_event_check_callback() {
+	## Check if there is a registered callback for the given event.
+	##
+	## Args:
+	##  $1 -- The mouse sequence
+
+	ev_btn=$(kbmouse_mouse_event_get_button "$1")
+	ev_mod=$(kbmouse_mouse_event_get_modifier "$1")
+	ev_posx=$(kbmouse_mouse_event_get_posx "$1")
+	ev_posy=$(kbmouse_mouse_event_get_posy "$1")
+
+	for ((i=0 ; i<${#_EVENT_CALLBACK[@]} ; i++)) ; do
+		x1=$(echo "${_EVENT_CALLBACK[$i]}" | cut -d " " -f 1)
+		y1=$(echo "${_EVENT_CALLBACK[$i]}" | cut -d " " -f 2)
+		x2=$(echo "${_EVENT_CALLBACK[$i]}" | cut -d " " -f 3)
+		y2=$(echo "${_EVENT_CALLBACK[$i]}" | cut -d " " -f 4)
+		cb=$(echo "${_EVENT_CALLBACK[$i]}" | cut -d " " -f 5)
+		if [ $ev_posx -ge $x1 ] && [ $ev_posx -le $x2 ] && [ $ev_posy -ge $y1 ] && [ $ev_posy -le $y2 ] ; then
+			$cb $ev_btn $ev_mod $ev_posx $ev_posy
+		fi
+	done
 }

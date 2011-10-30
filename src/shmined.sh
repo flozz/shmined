@@ -46,6 +46,7 @@ COLOR_NUMB=(21 28 196 18 90 124 52 232)
 
 
 NUMB_MINES=25
+REM_FLAGS=0
 GRID_SIZE=24
 GRID=()
 DISP_GRID=()
@@ -89,6 +90,17 @@ grid_init() {
 			mines=$(($mines-1))
 		fi
 	done
+}
+
+
+grid_xy_to_index() {
+	## Convert the x and y position of the grid in the arry index.
+	##
+	## Args:
+	##   $1 -- x
+	##   $2 -- y
+
+	echo $(($2*$GRID_SIZE+$x))
 }
 
 
@@ -136,14 +148,73 @@ grid_refresh() {
 }
 
 
+grid_mouse_event_cb() {
+	## Handle every mouse event on the grid.
+	## <Button_Event> <Modifier> <y> <x>
+	
+	#Calculate the cell
+	x=$(($3/2+$3%2-1))
+	y=$(($4-1))
+
+	if [ $1 == MOUSE_BTN_MIDDLE_PRESSED ] ; then #Flag
+		toggle_flag $x $y
+	fi
+	grid_refresh
+}
+
+
+toggle_flag() {
+	## Toggle the flag at the (x,y) position.
+	##
+	## Args:
+	##   $1 -- x
+	##   $2 -- y
+
+	index=$(grid_xy_to_index $1 $2)
+
+	if [ ${DISP_GRID[$index]} == "." ] ; then
+		if [ $REM_FLAGS -gt 0 ] ; then
+			DISP_GRID[$index]="f"
+			REM_FLAGS=$(($REM_FLAGS-1))
+		fi
+	elif [ ${DISP_GRID[$index]} == "f" ] ; then
+		DISP_GRID[$index]="."
+		REM_FLAGS=$(($REM_FLAGS+1))
+	fi
+
+	tui_window_set_title "${APPNAME} [$(($NUMB_MINES-$REM_FLAGS))/${NUMB_MINES}]" #FIXME
+}
+
+
+game_new() {
+	## New game.
+
+	REM_FLAGS=$NUMB_MINES
+	tui_draw_rect $COLOR_WIN_BG 1 1 $(tui_window_get_width) $(tui_window_get_height)
+	grid_init
+	grid_refresh
+	kbmouse_mouse_event_add_callback 1 1 $(($GRID_SIZE*2)) $GRID_SIZE grid_mouse_event_cb	
+}
+
+
+game_end() {
+	## Must be called when the game is finished.
+
+	echo TODO #FIXME
+}
+
 #Main
 kbmouse_terminal_init
 tui_window_set_title "${APPNAME}"
 copyright_screen
 
-tui_draw_rect $COLOR_WIN_BG 1 1 $(tui_window_get_width) $(tui_window_get_height)
-grid_init
-grid_refresh
-read #FIXME
+game_new
+
+#Main loop
+while : ; do
+	event=$(kbmouse_raw_input_read)
+	kbmouse_mouse_event_check_callback "$event"
+	#FIXME exit?
+done
 
 kbmouse_terminal_release
