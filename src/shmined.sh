@@ -123,7 +123,7 @@ grid_refresh() {
 			case ${DISP_GRID[$i]} in
 				.) #Cell
 					tui_color_set_background ${COLOR_CELL[$c]}
-					test ${GRID[$i]} == O && tui_color_set_background 213 #FIXME
+					#test ${GRID[$i]} == O && tui_color_set_background 213 #FIXME
 					echo -n "  "
 					;;
 				f) #Flag
@@ -168,7 +168,6 @@ grid_mouse_event_cb() {
 	if [ $1 == MOUSE_BTN_LEFT_PRESSED ] ; then     #==Discover
 		index=$(grid_xy_to_index $x $y)
 		if [ ${GRID[$index]} == "O" ] && [ ${DISP_GRID[$index]} == "." ] ; then #Mine!
-			game_end
 			game_over
 		elif [ ${DISP_GRID[$index]} == "." ] ; then #Water
 			grid_cell_stats $x $y
@@ -180,6 +179,7 @@ grid_mouse_event_cb() {
 			fi
 			[ $mines == 0 ] && game_expand_water
 			grid_refresh
+			game_check_end
 		fi
 	elif [ $1 == MOUSE_BTN_MIDDLE_PRESSED ] ; then #==Flag
 		game_toggle_flag $x $y
@@ -296,10 +296,34 @@ game_toggle_flag() {
 }
 
 
+game_check_end() {
+	## Check if the player win.
+
+	win=1
+	for ((i=0 ; i<$(($GRID_SIZE**2)) ; i++)) ; do
+		if [ ${DISP_GRID[$i]} == "." ] && [ ${GRID[$i]} != "O" ] ; then
+			win=0
+			break
+		fi
+	done
+
+	if [ $win == 1 ] ; then #Game finished
+		game_end
+		tui_window_set_title "${APPNAME} [Good Game]"
+		#Display a message
+		tui_color_set_background $COLOR_MSG_BG
+		tui_color_set_foreground $COLOR_MSG_FG
+		tui_print_xy 8 11 " ╭───────────────────────────────╮ "
+		tui_print_xy 8 12 " │       G O O D   G A M E       │ "
+		tui_print_xy 8 13 " ╰───────────────────────────────╯ "
+	fi
+}
+
+
 game_over() {
 	## Display the Game Over screen.
 
-	#FIXME remove callback
+	game_end
 	tui_window_set_title "${APPNAME} [Game Over]"
 	for ((i=0 ; i<$(($GRID_SIZE**2)) ; i++)) ; do
 		[ ${GRID[$i]} == "O" ] && DISP_GRID[$i]=O
