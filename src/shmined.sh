@@ -45,7 +45,7 @@ COLOR_WATER=(250 250)
 COLOR_NUMB=(21 28 196 18 90 124 52 232)
 
 
-NUMB_MINES=25
+NUMB_MINES=80
 REM_FLAGS=0
 GRID_SIZE=24
 GRID=()
@@ -100,7 +100,7 @@ grid_xy_to_index() {
 	##   $1 -- x
 	##   $2 -- y
 
-	echo $(($2*$GRID_SIZE+$x))
+	echo $(($2*$GRID_SIZE+$1))
 }
 
 
@@ -119,7 +119,7 @@ grid_refresh() {
 			case ${DISP_GRID[$i]} in
 				.) #Cell
 					tui_color_set_background ${COLOR_CELL[$c]}
-					test ${GRID[$i]} == O && tui_color_set_background 213 #FIXME
+					#test ${GRID[$i]} == O && tui_color_set_background 213 #FIXME
 					echo -n "  "
 					;;
 				f) #Flag
@@ -150,20 +150,113 @@ grid_refresh() {
 
 grid_mouse_event_cb() {
 	## Handle every mouse event on the grid.
-	## <Button_Event> <Modifier> <y> <x>
+	## <Button_Event> <Modifier> <x> <y>
 	
 	#Calculate the cell
 	x=$(($3/2+$3%2-1))
 	y=$(($4-1))
 
-	if [ $1 == MOUSE_BTN_MIDDLE_PRESSED ] ; then #Flag
-		toggle_flag $x $y
+	if [ $1 == MOUSE_BTN_LEFT_PRESSED ] ; then     #==Discover
+		index=$(grid_xy_to_index $x $y)
+		if [ ${GRID[$index]} == "O" ] && [ ${DISP_GRID[$index]} == "." ] ; then #Mine!
+			game_end
+			game_over
+		elif [ ${DISP_GRID[$index]} == "." ] ; then #Water
+			grid_cell_stats $x $y
+			#Water or Number
+			if [ $mines == 0 ] ; then 
+				DISP_GRID[$index]="w"
+			else
+				DISP_GRID[$index]="${mines}"
+			fi
+			[ $mines == 0 ] && game_expand_water
+		fi
+	elif [ $1 == MOUSE_BTN_MIDDLE_PRESSED ] ; then #==Flag
+		game_toggle_flag $x $y
 	fi
 	grid_refresh
 }
 
 
-toggle_flag() {
+grid_cell_stats() {
+	## Get the number of mine and water cell arround the giver cell.
+	##
+	## Args:
+	##   $1 -- x
+	##   $2 -- y
+	##
+	## Return:
+	##   $mines $water
+
+	index=$(grid_xy_to_index $1 $2)
+
+	mines=0
+	water=0
+	for ((dy=$(($2-1)) ; dy<=$(($2+1)) ; dy++)) ; do
+		for ((dx=$(($1-1)) ; dx<=$(($1+1)) ; dx++)) ; do
+			#Check if the coordinate are in the grid
+			[ $dx -lt 0 ] && continue
+			[ $dy -lt 0 ] && continue
+			[ $dx -ge $GRID_SIZE ] && continue
+			[ $dy -ge $GRID_SIZE ] && continue
+			#Count mines
+			[ "${GRID[$(grid_xy_to_index $dx $dy)]}" == "O" ] && mines=$(($mines+1))
+			#Count water
+			[ "${DISP_GRID[$(grid_xy_to_index $dx $dy)]}" == "w" ] && water=$(($water+1))
+		done
+	done
+}
+
+
+game_expand_water() {
+	## Discover a water area.
+
+	tui_window_set_title "${APPNAME} [Please wait...]"
+
+	change=1
+	while [ $change == 1 ] ; do
+		change=0
+		for ((gy=0 ; gy<$GRID_SIZE ; gy++)) ; do
+			for ((gx=0 ; gx<$GRID_SIZE ; gx++)) ; do
+
+				[ ${DISP_GRID[$(grid_xy_to_index $gx $gy)]} != "." ] && continue
+
+				grid_cell_stats $gx $gy
+
+				if [ $water -gt 0 ] ; then
+					change=1
+					#Water or Number
+					[ $mines == 0 ] && DISP_GRID[$(grid_xy_to_index $gx $gy)]="w" \
+						            || DISP_GRID[$(grid_xy_to_index $gx $gy)]="${mines}"
+				fi
+
+			done
+		done
+
+		[ $change == 0 ] && break || change=0
+
+		for ((gy=$(($GRID_SIZE-1)) ; gy>=0 ; gy--)) ; do
+			for ((gx=$(($GRID_SIZE-1)) ; gx>=0 ; gx--)) ; do
+
+				[ ${DISP_GRID[$(grid_xy_to_index $gx $gy)]} != "." ] && continue
+
+				grid_cell_stats $gx $gy
+
+				if [ $water -gt 0 ] ; then
+					change=1
+					#Water or Number
+					[ $mines == 0 ] && DISP_GRID[$(grid_xy_to_index $gx $gy)]="w" \
+						            || DISP_GRID[$(grid_xy_to_index $gx $gy)]="${mines}"
+				fi
+			done
+		done
+	done
+
+	tui_window_set_title "${APPNAME}"
+}
+
+
+game_toggle_flag() {
 	## Toggle the flag at the (x,y) position.
 	##
 	## Args:
@@ -186,6 +279,14 @@ toggle_flag() {
 }
 
 
+game_over() {
+	## Display the Game Over screen.
+
+	echo -n #FIXME
+	tui_window_set_title "${APPNAME} [Game Over]"
+}
+
+
 game_new() {
 	## New game.
 
@@ -200,7 +301,7 @@ game_new() {
 game_end() {
 	## Must be called when the game is finished.
 
-	echo TODO #FIXME
+	echo -n #FIXME
 }
 
 #Main

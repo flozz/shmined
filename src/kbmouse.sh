@@ -218,7 +218,7 @@ kbmouse_mouse_event_add_callback() {
 	##   $5 -- Callback function
 	##
 	## The callback function must take the following arguments:
-	##   <Button_Event> <Modifier> <y> <x>
+	##   <Button_Event> <Modifier> <x> <y>
 
 	_EVENT_CALLBACK=(${_EVENT_CALLBACK[@]} "$1 $2 $3 $4 $5")
 }
