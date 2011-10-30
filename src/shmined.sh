@@ -42,7 +42,11 @@ COLOR_CELL=(253 255)
 COLOR_FLAG_BG=(160 196)
 COLOR_FLAG_FG=255
 COLOR_WATER=(250 250)
+COLOR_MINE_BG=52
+COLOR_MINE_FG=207
 COLOR_NUMB=(21 28 196 18 90 124 52 232)
+COLOR_MSG_BG=255
+COLOR_MSG_FG=88
 
 
 NUMB_MINES=80
@@ -119,7 +123,7 @@ grid_refresh() {
 			case ${DISP_GRID[$i]} in
 				.) #Cell
 					tui_color_set_background ${COLOR_CELL[$c]}
-					#test ${GRID[$i]} == O && tui_color_set_background 213 #FIXME
+					test ${GRID[$i]} == O && tui_color_set_background 213 #FIXME
 					echo -n "  "
 					;;
 				f) #Flag
@@ -130,6 +134,11 @@ grid_refresh() {
 				w) #Water
 					tui_color_set_background ${COLOR_WATER[$c]}
 					echo -n "  "
+					;;
+				O) #Mine (game over)
+					tui_color_set_background ${COLOR_MINE_BG}
+					tui_color_set_foreground ${COLOR_MINE_FG}
+					echo -n "()"
 					;;
 				1|2|3|4|5|6|7|8) #Number
 					tui_color_set_background ${COLOR_WATER[$c]}
@@ -170,11 +179,12 @@ grid_mouse_event_cb() {
 				DISP_GRID[$index]="${mines}"
 			fi
 			[ $mines == 0 ] && game_expand_water
+			grid_refresh
 		fi
 	elif [ $1 == MOUSE_BTN_MIDDLE_PRESSED ] ; then #==Flag
 		game_toggle_flag $x $y
+		grid_refresh
 	fi
-	grid_refresh
 }
 
 
@@ -212,6 +222,13 @@ game_expand_water() {
 	## Discover a water area.
 
 	tui_window_set_title "${APPNAME} [Please wait...]"
+
+	#Display a message
+	tui_color_set_background $COLOR_MSG_BG
+	tui_color_set_foreground $COLOR_MSG_FG
+	tui_print_xy 8 11 " ╭───────────────────────────────╮ "
+	tui_print_xy 8 12 " │  P L E A S E   W A I T . . .  │ "
+	tui_print_xy 8 13 " ╰───────────────────────────────╯ "
 
 	change=1
 	while [ $change == 1 ] ; do
@@ -282,8 +299,18 @@ game_toggle_flag() {
 game_over() {
 	## Display the Game Over screen.
 
-	echo -n #FIXME
+	#FIXME remove callback
 	tui_window_set_title "${APPNAME} [Game Over]"
+	for ((i=0 ; i<$(($GRID_SIZE**2)) ; i++)) ; do
+		[ ${GRID[$i]} == "O" ] && DISP_GRID[$i]=O
+	done
+	grid_refresh
+	#Display a message
+	tui_color_set_background $COLOR_MSG_BG
+	tui_color_set_foreground $COLOR_MSG_FG
+	tui_print_xy 8 11 " ╭───────────────────────────────╮ "
+	tui_print_xy 8 12 " │       G A M E   O V E R       │ "
+	tui_print_xy 8 13 " ╰───────────────────────────────╯ "
 }
 
 
