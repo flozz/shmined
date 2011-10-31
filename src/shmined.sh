@@ -304,6 +304,9 @@ game_check_end() {
 		if [ ${DISP_GRID[$i]} == "." ] && [ ${GRID[$i]} != "O" ] ; then
 			win=0
 			break
+		elif [ ${DISP_GRID[$i]} == "f" ] && [ ${GRID[$i]} != "O" ] ; then
+			win=0
+			break
 		fi
 	done
 
