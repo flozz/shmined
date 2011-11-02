@@ -7,5 +7,6 @@ shMined is an implementation of the famous minesweeper game, in Bash.
 
 Dependencies:
 -------------
+
     * Bourn Again Shell (Bash)
 

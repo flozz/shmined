@@ -54,6 +54,7 @@ REM_FLAGS=0
 GRID_SIZE=24
 GRID=()
 DISP_GRID=()
+GRID_CB=""
 
 
 copyright_screen() {
@@ -348,14 +349,16 @@ game_new() {
 	tui_draw_rect $COLOR_WIN_BG 1 1 $(tui_window_get_width) $(tui_window_get_height)
 	grid_init
 	grid_refresh
-	kbmouse_mouse_event_add_callback 1 1 $(($GRID_SIZE*2)) $GRID_SIZE grid_mouse_event_cb	
+	kbmouse_mouse_event_add_callback 1 1 $(($GRID_SIZE*2)) $GRID_SIZE grid_mouse_event_cb
+	GRID_CB=$(kbmouse_mouse_event_get_latest_callback)
 }
 
 
 game_end() {
 	## Must be called when the game is finished.
 
-	echo -n #FIXME
+	kbmouse_mouse_event_rm_callback "${GRID_CB}"
+	GRID_CB=""
 }
 
 #Main

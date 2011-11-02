@@ -224,6 +224,29 @@ kbmouse_mouse_event_add_callback() {
 }
 
 
+kbmouse_mouse_event_get_latest_callback() {
+	## Get the id of the latest registered callback.
+
+	echo "${_EVENT_CALLBACK[-1]}"
+}
+
+
+kbmouse_mouse_event_rm_callback() {
+	## Unregister a callback on mouse event.
+	##
+	## Args:
+	##   $1 -- The callback ID.
+
+	events_cb=()
+
+	for ((i=0 ; i<${#_EVENT_CALLBACK[@]} ; i++)) ; do
+		[ "${_EVENT_CALLBACK[$i]}" != "$1" ] && event_cb=(${events_cb[@]} ${_EVENT_CALLBACK[$i]})
+	done
+
+	_EVENT_CALLBACK=(${events_cb[@]})
+}
+
+
 kbmouse_mouse_event_check_callback() {
 	## Check if there is a registered callback for the given event.
 	##
