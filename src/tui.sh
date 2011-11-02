@@ -152,3 +152,26 @@ tui_draw_rect() {
 	done
 	tui_color_set_background
 }
+
+
+tui_draw_text_rect() {
+	## Draw a rectangle with a text inside.
+	##
+	## Args:
+	##   $1 -- Background color (0-255)
+	##   $2 -- Foreground color (0-255)
+	##   $3 -- x1
+	##   $4 -- y1
+	##   $5 -- x2
+	##   $6 -- y2
+	##   $7 -- The text
+
+	tui_draw_rect $1 $3 $4 $5 $6
+	txtx=$(($3+(($5-$3)/2)-${#7}/2+1))
+	txty=$(($4+(($6-$4)/2)))
+	tui_cursor_move_to $txtx $txty
+	tui_color_set_background $1
+	tui_color_set_foreground $2
+	echo -n "$7"
+	tui_color_set_background
+}

@@ -220,7 +220,7 @@ kbmouse_mouse_event_add_callback() {
 	## The callback function must take the following arguments:
 	##   <Button_Event> <Modifier> <x> <y>
 
-	_EVENT_CALLBACK=(${_EVENT_CALLBACK[@]} "$1 $2 $3 $4 $5")
+	_EVENT_CALLBACK=("${_EVENT_CALLBACK[@]}" "$1 $2 $3 $4 $5")
 }
 
 
@@ -240,10 +240,10 @@ kbmouse_mouse_event_rm_callback() {
 	events_cb=()
 
 	for ((i=0 ; i<${#_EVENT_CALLBACK[@]} ; i++)) ; do
-		[ "${_EVENT_CALLBACK[$i]}" != "$1" ] && event_cb=(${events_cb[@]} ${_EVENT_CALLBACK[$i]})
+		[ "${_EVENT_CALLBACK[$i]}" != "$1" ] && events_cb=("${events_cb[@]}" "${_EVENT_CALLBACK[$i]}")
 	done
 
-	_EVENT_CALLBACK=(${events_cb[@]})
+	_EVENT_CALLBACK=("${events_cb[@]}")
 }
 
 

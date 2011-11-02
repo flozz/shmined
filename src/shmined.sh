@@ -47,6 +47,8 @@ COLOR_MINE_FG=207
 COLOR_NUMB=(21 28 196 18 90 124 52 232)
 COLOR_MSG_BG=255
 COLOR_MSG_FG=88
+COLOR_BTN_BG=255
+COLOR_BTN_FG=88
 
 
 NUMB_MINES=80
@@ -162,6 +164,8 @@ grid_mouse_event_cb() {
 	## Handle every mouse event on the grid.
 	## <Button_Event> <Modifier> <x> <y>
 	
+	tui_window_set_title "${APPNAME}"
+
 	#Calculate the cell
 	x=$(($3/2+$3%2-1))
 	y=$(($4-1))
@@ -346,11 +350,11 @@ game_new() {
 	## New game.
 
 	REM_FLAGS=$NUMB_MINES
-	tui_draw_rect $COLOR_WIN_BG 1 1 $(tui_window_get_width) $(tui_window_get_height)
 	grid_init
 	grid_refresh
 	kbmouse_mouse_event_add_callback 1 1 $(($GRID_SIZE*2)) $GRID_SIZE grid_mouse_event_cb
 	GRID_CB=$(kbmouse_mouse_event_get_latest_callback)
+	tui_window_set_title "${APPNAME} [New Game]"
 }
 
 
@@ -361,10 +365,48 @@ game_end() {
 	GRID_CB=""
 }
 
-#Main
+
+btn_quit_cb() {
+	## Handle every mouse event on the quit button.
+	## <Button_Event> <Modifier> <x> <y>
+
+	if [ $1 == MOUSE_BTN_LEFT_PRESSED ] ; then
+		kbmouse_terminal_release
+		tui_color_set_background
+		clear
+		exit 0
+	fi
+}
+
+
+btn_new_game_cb() {
+	## Handle every mouse event on the new game button.
+	## <Button_Event> <Modifier> <x> <y>
+
+	if [ $1 == MOUSE_BTN_LEFT_PRESSED ] ; then
+		game_end
+		game_new
+	fi
+}
+
+
+
+#== Main ==
+
 kbmouse_terminal_init
 tui_window_set_title "${APPNAME}"
 copyright_screen
+
+#Clear the screen
+tui_draw_rect $COLOR_WIN_BG 1 1 $(tui_window_get_width) $(tui_window_get_height)
+
+#Quit button
+tui_draw_text_rect $COLOR_BTN_BG $COLOR_BTN_FG 51 21 78 23 "Quit"
+kbmouse_mouse_event_add_callback 51 21 78 23 btn_quit_cb
+
+#New Game button
+tui_draw_text_rect $COLOR_BTN_BG $COLOR_BTN_FG 51 17 78 19 "New Game"
+kbmouse_mouse_event_add_callback 51 17 78 19 btn_new_game_cb
 
 game_new
 
@@ -372,7 +414,5 @@ game_new
 while : ; do
 	event=$(kbmouse_raw_input_read)
 	kbmouse_mouse_event_check_callback "$event"
-	#FIXME exit?
 done
 
-kbmouse_terminal_release
