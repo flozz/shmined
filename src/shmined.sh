@@ -371,10 +371,7 @@ btn_quit_cb() {
 	## <Button_Event> <Modifier> <x> <y>
 
 	if [ $1 == MOUSE_BTN_LEFT_PRESSED ] ; then
-		kbmouse_terminal_release
-		tui_color_set_background
-		clear
-		exit 0
+		game_quit
 	fi
 }
 
@@ -390,10 +387,20 @@ btn_new_game_cb() {
 }
 
 
+game_quit() {
+	## Quit the game (restore the normal state of the terminal).
+
+	tui_color_set_background
+	kbmouse_terminal_release
+	exit 0
+}
+
+
 
 #== Main ==
 
 kbmouse_terminal_init
+trap game_quit INT
 tui_window_set_title "${APPNAME}"
 copyright_screen
 

@@ -33,6 +33,7 @@ _EVENT_CALLBACK=()
 kbmouse_terminal_init() {
 	## Initialize the terminal for mouse tracking
 
+	echo -en "\e[?1047h" #Alternate screen buffer
 	stty -echo -icanon   #No echo, no line buffering
 	echo -en "\e[?25l"   #Hide cursor
 	echo -en "\e[?1001h" #Mouse tracking (all events)
@@ -45,6 +46,7 @@ kbmouse_terminal_release() {
 	echo -en "\e[?1001l" #No mouse tracking (all events)
 	echo -en "\e[?25h"   #Show cursor
 	stty echo icanon     #Echo, line buffering
+	echo -en "\e[?1047l" #Normal screen buffer
 }
 
 
