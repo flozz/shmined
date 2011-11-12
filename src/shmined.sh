@@ -297,7 +297,7 @@ game_toggle_flag() {
 		REM_FLAGS=$(($REM_FLAGS+1))
 	fi
 
-	tui_window_set_title "${APPNAME} [$(($NUMB_MINES-$REM_FLAGS))/${NUMB_MINES}]" #FIXME
+	draw_remaining_flags
 }
 
 
@@ -343,6 +343,7 @@ game_over() {
 	tui_print_xy 8 11 " ╭───────────────────────────────╮ "
 	tui_print_xy 8 12 " │       G A M E   O V E R       │ "
 	tui_print_xy 8 13 " ╰───────────────────────────────╯ "
+	draw_smiley_dead
 }
 
 
@@ -355,6 +356,8 @@ game_new() {
 	kbmouse_mouse_event_add_callback 1 1 $(($GRID_SIZE*2)) $GRID_SIZE grid_mouse_event_cb
 	GRID_CB=$(kbmouse_mouse_event_get_latest_callback)
 	tui_window_set_title "${APPNAME} [New Game]"
+	draw_smiley_alive
+	draw_remaining_flags
 }
 
 
@@ -363,6 +366,59 @@ game_end() {
 
 	kbmouse_mouse_event_rm_callback "${GRID_CB}"
 	GRID_CB=""
+}
+
+
+draw_remaining_flags() {
+	## Draw the number of remaining flags.
+
+	tui_draw_rect 240 51 15 78 15 
+	tui_color_set_background 240
+	tui_color_set_foreground 255
+	_text="$((${NUMB_MINES}-${REM_FLAGS})) / ${NUMB_MINES}"
+	tui_print_xy $(((78+51)/2-${#_text}/2+1)) 15 "${_text}"
+}
+
+
+draw_smiley_alive() {
+	## Draw the alive smile.
+
+	tui_draw_rect 240 51 2 78 13
+	tui_draw_rect 255 55 3 58 4
+	tui_draw_rect 255 71 3 74 4
+	tui_draw_rect 255 53 10 54 10
+	tui_draw_rect 255 75 10 76 10
+	tui_draw_rect 255 55 11 74 11
+}
+
+
+draw_smiley_dead() {
+	## Draw the dead smile.
+
+	tui_draw_rect 240 51 2 78 13
+
+	tui_draw_rect 255 53 3 54 3
+	tui_draw_rect 255 57 3 58 3
+	tui_draw_rect 255 71 3 72 3
+	tui_draw_rect 255 75 3 76 3
+
+	tui_draw_rect 255 55 4 56 4
+	tui_draw_rect 255 73 4 74 4
+
+	tui_draw_rect 255 53 5 54 5
+	tui_draw_rect 255 57 5 58 5
+	tui_draw_rect 255 71 5 72 5
+	tui_draw_rect 255 75 5 76 5
+
+	tui_draw_rect 255 55 9 74 9
+	tui_draw_rect 255 53 10 54 10
+	tui_draw_rect 255 75 10 76 10
+
+	tui_draw_rect 255 65 10 66 10
+	tui_draw_rect 255 70 10 71 10
+	tui_draw_rect 255 65 11 66 11
+	tui_draw_rect 255 70 11 71 11
+	tui_draw_rect 255 67 12 69 12
 }
 
 
