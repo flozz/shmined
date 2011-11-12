@@ -2,7 +2,24 @@
 =                  shMined - The minesweeper game, in Bash!                  =
 ==============================================================================
 
-shMined is an implementation of the famous minesweeper game, in Bash.
+
+shMined is an implementation of the famous minesweeper game, in Bash. There
+is already a lot of implementations of this game, so why another one? Just
+because it's fun to see what we can do with only Bash. shMined has a mouse
+support, you just have to click on a cell to play.
+
+WEB SITE: http://projects.flogisoft.com/shmined/
+
+
+How to play:
+------------
+
+    See <http://en.wikipedia.org/wiki/Minesweeper_(video_game)> for the rules.
+
+    For playing, you just need your mouse:
+
+      * Left-click: discover what is under the cell,
+      * Ctrl+Left-click or Middle-click: put a flag on the cell.
 
 
 Dependencies:
