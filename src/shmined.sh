@@ -170,7 +170,7 @@ grid_mouse_event_cb() {
 	x=$(($3/2+$3%2-1))
 	y=$(($4-1))
 
-	if [ $1 == MOUSE_BTN_LEFT_PRESSED ] ; then     #==Discover
+	if [ $1 == MOUSE_BTN_LEFT_PRESSED ] && [ $2 == MODIFIER_NONE ] ; then     #==Discover
 		index=$(grid_xy_to_index $x $y)
 		if [ ${GRID[$index]} == "O" ] && [ ${DISP_GRID[$index]} == "." ] ; then #Mine!
 			game_over
@@ -186,7 +186,8 @@ grid_mouse_event_cb() {
 			grid_refresh
 			game_check_end
 		fi
-	elif [ $1 == MOUSE_BTN_MIDDLE_PRESSED ] ; then #==Flag
+	elif [ $1 == MOUSE_BTN_MIDDLE_PRESSED ] || ( [ $1 == MOUSE_BTN_LEFT_PRESSED ] \
+		&& [ $2 == MODIFIER_CONTROL ] ); then #==Flag
 		game_toggle_flag $x $y
 		grid_refresh
 	fi
